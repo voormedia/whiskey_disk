@@ -13,13 +13,13 @@ class WhiskeyDisk
 
       def stringify(structure)
         return structure.clone unless structure.respond_to? :keys
+
         stringify_hash(structure)
       end
-      
+
       def filter(data)
         stringify(data)
       end
     end
   end
 end
-

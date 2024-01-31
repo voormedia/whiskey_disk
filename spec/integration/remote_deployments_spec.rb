@@ -16,7 +16,7 @@ integration_spec do
       describe 'performing a setup' do
         it 'performs a checkout of the repository to the target path' do
           run_setup(@args)
-          File.exists?(deployed_file('project/README')).should == true
+          File.exist?(deployed_file('project/README')).should == true
         end
 
         it 'has the working copy set to the master branch' do
@@ -43,12 +43,12 @@ integration_spec do
       describe 'performing a deployment' do
         before do
           checkout_repo('project')
-          File.unlink(deployed_file('project/README'))  # modify the deployed checkout
+          File.unlink(deployed_file('project/README')) # modify the deployed checkout
         end
 
         it 'updates the checkout of the repository on the target path' do
           run_deploy(@args)
-          File.exists?(deployed_file('project/README')).should == true
+          File.exist?(deployed_file('project/README')).should == true
         end
 
         it 'has the working copy set to the master branch' do
@@ -77,12 +77,12 @@ integration_spec do
         describe 'and using the master branch' do
           before do
             run_setup(@args)
-            File.unlink(deployed_file('project/README'))  # modify the deployed checkout
+            File.unlink(deployed_file('project/README')) # modify the deployed checkout
           end
 
           it 'updates the checkout of the repository on the target path' do
             run_deploy(@args)
-            File.exists?(deployed_file('project/README')).should == true
+            File.exist?(deployed_file('project/README')).should == true
           end
 
           it 'has the working copy set to the master branch' do
@@ -121,7 +121,7 @@ integration_spec do
       end
 
       describe 'performing a setup' do
-        # TODO FIXME -- this spec fails due to interplay between STDOUT and file buffering in ruby system() (*WTF*)
+        # TODO: FIXME -- this spec fails due to interplay between STDOUT and file buffering in ruby system() (*WTF*)
         #
         # it 'uses specified ssh options when performing the setup' do
         #   run_setup(@args)
@@ -142,10 +142,10 @@ integration_spec do
       describe 'performing a deployment' do
         before do
           checkout_repo('project')
-          File.unlink(deployed_file('project/README'))  # modify the deployed checkout
+          File.unlink(deployed_file('project/README')) # modify the deployed checkout
         end
 
-        # TODO FIXME -- this spec fails due to interplay between STDOUT and file buffering in ruby system() (*WTF*)
+        # TODO: FIXME -- this spec fails due to interplay between STDOUT and file buffering in ruby system() (*WTF*)
         #
         # it 'uses specified ssh options when performing the setup' do
         #   run_deploy(@args, true)

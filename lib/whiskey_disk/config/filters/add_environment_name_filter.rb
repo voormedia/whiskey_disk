@@ -4,7 +4,7 @@ class WhiskeyDisk
   class Config
     class AddEnvironmentNameFilter < AbstractFilter
       def filter(data)
-        data.merge( { 'environment' => environment_name } )
+        data.merge({ 'environment' => environment_name })
       end
     end
   end

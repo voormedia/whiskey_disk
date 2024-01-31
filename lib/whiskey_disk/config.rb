@@ -6,39 +6,42 @@ require 'whiskey_disk/config/filter'
 class WhiskeyDisk
   class Config
     def fetch
-      raise "Cannot determine current environment -- try rake ... to=staging, for example." unless environment_name
+      raise 'Cannot determine current environment -- try rake ... to=staging, for example.' unless environment_name
+
       filter_data(load_data)
     end
 
     def debug?
       env_flag_is_true?('debug')
     end
-    
+
     def domain_limit
       env_key_or_false?('only')
     end
-    
+
     def check_staleness?
       env_flag_is_true?('check')
     end
-    
+
     def configuration_file
       return path if valid_path?(path)
-      
+
       files = []
 
-      files += [
-        File.join(base_path, 'deploy', specified_project_name, "#{environment_name}.yml"),  # /deploy/foo/staging.yml
-        File.join(base_path, 'deploy', "#{specified_project_name}.yml") # /deploy/foo.yml
-      ] if specified_project_name
+      if specified_project_name
+        files += [
+          File.join(base_path, 'deploy', specified_project_name, "#{environment_name}.yml"), # /deploy/foo/staging.yml
+          File.join(base_path, 'deploy', "#{specified_project_name}.yml") # /deploy/foo.yml
+        ]
+      end
 
       files += [
-        File.join(base_path, 'deploy', "#{environment_name}.yml"),  # /deploy/staging.yml
+        File.join(base_path, 'deploy', "#{environment_name}.yml"), # /deploy/staging.yml
         File.join(base_path, "#{environment_name}.yml"), # /staging.yml
         File.join(base_path, 'deploy.yml') # /deploy.yml
       ]
 
-      files.each { |file|  return file if File.exists?(file) }
+      files.each { |file| return file if File.exist?(file) }
 
       raise "Could not locate configuration file in path [#{base_path}]"
     end
@@ -46,23 +49,26 @@ class WhiskeyDisk
     def environment_name
       return false unless env_has_key?('to')
       return ENV['to'] unless ENV['to'] =~ /:/
+
       ENV['to'].split(/:/)[1]
     end
 
     def specified_project_name
       return false unless env_has_key?('to')
       return false unless ENV['to'] =~ /:/
+
       ENV['to'].split(/:/).first
     end
-    
+
     def contains_rakefile?(path)
-      File.exists?(File.expand_path(File.join(path, 'Rakefile')))
+      File.exist?(File.expand_path(File.join(path, 'Rakefile')))
     end
 
     def find_rakefile_from_current_path
       original_path = Dir.pwd
-      while (!contains_rakefile?(Dir.pwd))
+      until contains_rakefile?(Dir.pwd)
         return File.join(original_path, 'config') if Dir.pwd == '/'
+
         Dir.chdir('..')
       end
       File.join(Dir.pwd, 'config')
@@ -76,9 +82,11 @@ class WhiskeyDisk
 
     def valid_path?(path)
       return false unless path
+
       uri = URI.parse(path)
       return path if uri.scheme
-      return path if File.file?(path)
+
+      path if File.file?(path)
     end
 
     def project_name
@@ -87,26 +95,26 @@ class WhiskeyDisk
 
     # called only by #load_data
     def configuration_data
-      open(configuration_file) {|f| f.read }
+      open(configuration_file) { |f| f.read }
     end
 
     # called only by #fetch
     def load_data
       YAML.load(configuration_data)
     rescue Exception => e
-      raise %Q{Error reading configuration file [#{configuration_file}]: "#{e}"}
+      raise %(Error reading configuration file [#{configuration_file}]: "#{e}")
     end
-    
+
     def filter
       @filter ||= WhiskeyDisk::Config::Filter.new(self)
     end
-    
+
     # called only by #fetch
     def filter_data(data)
       filter.filter_data(data)
     end
 
-  private
+    private
 
     def path
       env_key_or_false?('path')
@@ -122,6 +130,6 @@ class WhiskeyDisk
 
     def env_key_or_false?(key)
       env_has_key?(key) ? ENV[key] : false
-    end  
+    end
   end
 end

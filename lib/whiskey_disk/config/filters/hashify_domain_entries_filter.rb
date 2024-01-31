@@ -4,7 +4,7 @@ class WhiskeyDisk
   class Config
     class HashifyDomainEntriesFilter < AbstractFilter
       def needs_hashing?(domain)
-        ! domain.respond_to?(:keys)
+        !domain.respond_to?(:keys)
       end
 
       def hashify_domain(domain)
@@ -17,7 +17,8 @@ class WhiskeyDisk
 
       def hashify_domains(domain_list)
         return new_domain unless domain_list
-        [ domain_list ].flatten.collect {|domain| hashify_domain(domain) }
+
+        [domain_list].flatten.collect { |domain| hashify_domain(domain) }
       end
 
       def filter(data)
@@ -26,4 +27,3 @@ class WhiskeyDisk
     end
   end
 end
-

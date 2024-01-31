@@ -17,7 +17,7 @@ class WhiskeyDisk
   class Config
     class Filter
       attr_reader :config, :filters
-  
+
       def initialize(config)
         @config = config
         @filters = [
@@ -37,7 +37,7 @@ class WhiskeyDisk
           NormalizeSshOptionsFilter
         ]
       end
-  
+
       def filter_data(data)
         filters.inject(data.clone) do |result, filter|
           result = filter.new(config).filter(result)

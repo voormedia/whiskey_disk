@@ -2,17 +2,17 @@ require 'rake'
 require 'rake/testtask'
 
 desc 'Default: run unit tests.'
-task :default => :test
+task default: :test
 
 desc 'Test whiskey_disk'
 task :test do
-  files = Dir['spec/**/*_spec.rb'].join(" ")
+  files = Dir['spec/**/*_spec.rb'].join(' ')
   system("bacon #{files}")
 end
 
 namespace :integration do
   def say(mesg)
-    STDERR.puts mesg
+    warn mesg
   end
 
   def vagrant_path
@@ -20,7 +20,7 @@ namespace :integration do
   end
 
   def root_path
-    File.expand_path(File.dirname(__FILE__))
+    __dir__
   end
 
   def pidfile
@@ -29,31 +29,34 @@ namespace :integration do
 
   def start_git_daemon
     stop_git_daemon
-    say "Starting git daemon..."
-    run(root_path, "git daemon --base-path=#{root_path}/scenarios/git_repositories/ --reuseaddr --verbose --detach --pid-file=#{pidfile}")
+    say 'Starting git daemon...'
+    run(root_path,
+        "git daemon --base-path=#{root_path}/scenarios/git_repositories/ --reuseaddr --verbose --detach --pid-file=#{pidfile}")
   end
 
   def stop_git_daemon
-    return unless File.exists?(pidfile)
+    return unless File.exist?(pidfile)
+
     pid = File.read(pidfile).chomp
     return if pid == ''
-    say "Stopping git daemon..."
+
+    say 'Stopping git daemon...'
     run(root_path, "kill #{pid}")
   end
 
   def start_vm
-    say "Bringing up vagrant vm..."
+    say 'Bringing up vagrant vm...'
     run(vagrant_path, 'vagrant up')
     copy_ssh_config
   end
 
   def stop_vm
-    say "Shutting down vagrant vm..."
+    say 'Shutting down vagrant vm...'
     run(vagrant_path, 'vagrant halt')
   end
 
   def copy_ssh_config
-    say "Capturing vagrant ssh_config data..."
+    say 'Capturing vagrant ssh_config data...'
     run(vagrant_path, "vagrant ssh_config > #{vagrant_path}/ssh_config")
   end
 
@@ -86,21 +89,20 @@ end
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gemspec|
-    gemspec.name = "whiskey_disk"
-    gemspec.summary = "embarrassingly fast deployments."
-    gemspec.description = "Opinionated gem for doing fast git-based server deployments."
-    gemspec.email = "rick@rickbradley.com"
-    gemspec.homepage = "http://github.com/flogic/whiskey_disk"
-    gemspec.authors = ["Rick Bradley"]
+    gemspec.name = 'whiskey_disk'
+    gemspec.summary = 'embarrassingly fast deployments.'
+    gemspec.description = 'Opinionated gem for doing fast git-based server deployments.'
+    gemspec.email = 'rick@rickbradley.com'
+    gemspec.homepage = 'http://github.com/flogic/whiskey_disk'
+    gemspec.authors = ['Rick Bradley']
     gemspec.add_dependency('rake')
 
     # I've decided that the integration spec shizzle shouldn't go into the gem
-    rejected = %w(scenarios spec/integration)
-    gemspec.files.reject {|f| rejected.include?(f) }
-    gemspec.test_files.reject {|f| rejected.include?(f) }
+    rejected = %w[scenarios spec/integration]
+    gemspec.files.reject { |f| rejected.include?(f) }
+    gemspec.test_files.reject { |f| rejected.include?(f) }
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
   # if you get here, you need Jeweler installed to do packaging and gem installation, yo.
 end
-

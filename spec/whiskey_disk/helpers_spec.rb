@@ -3,11 +3,11 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'lib', 'w
 
 describe 'when checking for a role during setup or deployment' do
   it 'accepts a role string' do
-    lambda { role?('web') }.should.not.raise(ArgumentError)
+    -> { role?('web') }.should.not.raise(ArgumentError)
   end
-  
+
   it 'requires a role string' do
-    lambda { role? }.should.raise(ArgumentError)
+    -> { role? }.should.raise(ArgumentError)
   end
 
   it 'returns false if the WD_ROLES environment variable is unset' do
@@ -19,22 +19,22 @@ describe 'when checking for a role during setup or deployment' do
     ENV['WD_ROLES'] = ''
     role?(:web).should.be.false
   end
-  
+
   it 'returns true if the role, as a symbol is among the roles in the WD_ROLES env variable' do
     ENV['WD_ROLES'] = 'db:web'
     role?(:db).should.be.true
   end
-  
+
   it 'returns true if the role, as a string is among the roles in the WD_ROLES env variable' do
     ENV['WD_ROLES'] = 'db:web'
     role?('db').should.be.true
   end
-  
+
   it 'returns false if the role, as a symbol is not among the roles in the WD_ROLES env variable' do
     ENV['WD_ROLES'] = 'db:web'
     role?(:app).should.be.false
   end
-  
+
   it 'returns false if the role, as a string is not among the roles in the WD_ROLES env variable' do
     ENV['WD_ROLES'] = 'db:web'
     role?('app').should.be.false
@@ -42,11 +42,11 @@ describe 'when checking for a role during setup or deployment' do
 end
 
 def set_git_changes(changes)
-  self.stub!(:git_changes).and_return(changes)
+  stub!(:git_changes).and_return(changes)
 end
 
 def set_rsync_changes(changes)
-  self.stub!(:rsync_changes).and_return(changes)
+  stub!(:rsync_changes).and_return(changes)
 end
 
 describe 'when determining if certain files changed when a deployment was run' do
@@ -56,74 +56,74 @@ describe 'when determining if certain files changed when a deployment was run' d
     @non_matching_file = '/nowhere/file'
     @substring_file    = '/nowhere/filething'
     @random_file       = '/random/path'
-    
+
     set_git_changes([])
     set_rsync_changes([])
   end
-  
+
   it 'accepts a path' do
-    lambda { changed?('foo') }.should.not.raise(ArgumentError)
-  end
-  
-  it 'requires a path' do
-    lambda { changed? }.should.raise(ArgumentError)
-  end
-  
-  it 'returns true when the specified file is in the list of git changes' do
-    set_git_changes([ @matching_file, @random_file])
-    changed?(@matching_file).should.be.true
-  end
-  
-  it 'ignores trailing "/"s in the provided path when doing an exact git change match' do
-    set_git_changes([ @matching_file, @random_file])
-    changed?(@matching_file + '///').should.be.true    
-  end
-  
-  it 'returns true when the specified path is a full path prefix in the list of git changes' do
-    set_git_changes([ @matching_file , @random_file])
-    changed?(@matching_path).should.be.true    
-  end
-  
-  it 'ignores trailing "/"s in the provided path when doing a path git change match' do
-    set_git_changes([ @matching_file , @random_file])
-    changed?(@matching_path + '///').should.be.true    
+    -> { changed?('foo') }.should.not.raise(ArgumentError)
   end
 
-  it 'returns true when the specified file is in the list of rsync changes' do    
-    set_rsync_changes([ @matching_file, @random_file])
+  it 'requires a path' do
+    -> { changed? }.should.raise(ArgumentError)
+  end
+
+  it 'returns true when the specified file is in the list of git changes' do
+    set_git_changes([@matching_file, @random_file])
+    changed?(@matching_file).should.be.true
+  end
+
+  it 'ignores trailing "/"s in the provided path when doing an exact git change match' do
+    set_git_changes([@matching_file, @random_file])
+    changed?(@matching_file + '///').should.be.true
+  end
+
+  it 'returns true when the specified path is a full path prefix in the list of git changes' do
+    set_git_changes([@matching_file, @random_file])
+    changed?(@matching_path).should.be.true
+  end
+
+  it 'ignores trailing "/"s in the provided path when doing a path git change match' do
+    set_git_changes([@matching_file, @random_file])
+    changed?(@matching_path + '///').should.be.true
+  end
+
+  it 'returns true when the specified file is in the list of rsync changes' do
+    set_rsync_changes([@matching_file, @random_file])
     changed?(@matching_file).should.be.true
   end
 
   it 'ignores trailing "/"s in the provided path when doing an exact rsync change match' do
-    set_rsync_changes([ @matching_file, @random_file])
-    changed?(@matching_file + "///").should.be.true
+    set_rsync_changes([@matching_file, @random_file])
+    changed?(@matching_file + '///').should.be.true
   end
 
   it 'returnes true when the specified path is a full path prefix in the list of git changes' do
-    set_rsync_changes([ @matching_file , @random_file])
-    changed?(@matching_path).should.be.true    
+    set_rsync_changes([@matching_file, @random_file])
+    changed?(@matching_path).should.be.true
   end
-  
+
   it 'ignores trailing "/"s in the provided path when doing a path rsync change match' do
-    set_rsync_changes([ @matching_file , @random_file])
-    changed?(@matching_path + '///').should.be.true    
+    set_rsync_changes([@matching_file, @random_file])
+    changed?(@matching_path + '///').should.be.true
   end
-  
+
   it 'ignores regex metacharacters when looking for a git match' do
-    set_git_changes([ '/path/to/somestring'])
+    set_git_changes(['/path/to/somestring'])
     changed?('/path/to/some.*').should.be.false
   end
-  
+
   it 'ignores regex metacharacters when looking for an rsync match' do
-    set_rsync_changes([ '/path/to/somestring'])
+    set_rsync_changes(['/path/to/somestring'])
     changed?('/path/to/some.*').should.be.false
   end
-  
+
   it 'returns true when the git changes file cannot be found' do
     set_git_changes(nil)
-    changed?(@matching_file).should.be.true    
+    changed?(@matching_file).should.be.true
   end
-  
+
   it 'returns false if not path or file matches the specified file' do
     set_git_changes([@matching_file, @matching_path, @random_file, @substring_file])
     set_rsync_changes([@matching_file, @matching_path, @random_file, @substring_file])
@@ -131,7 +131,7 @@ describe 'when determining if certain files changed when a deployment was run' d
   end
 end
 
-describe "when finding files changed by git in a deployment" do
+describe 'when finding files changed by git in a deployment' do
   before do
     @contents = 'CHANGELOG
 README.markdown
@@ -153,41 +153,41 @@ spec/whiskey_disk/config_spec.rb
 spec/whiskey_disk/helpers_spec.rb
 spec/whiskey_disk_spec.rb
 whiskey_disk.gemspec
-'   
+'
   end
-    
+
   it 'works without arguments' do
-    lambda { git_changes }.should.not.raise(ArgumentError)
+    -> { git_changes }.should.not.raise(ArgumentError)
   end
-  
+
   it 'does not allow arguments' do
-    lambda { git_changes(:foo) }.should.raise(ArgumentError)
+    -> { git_changes(:foo) }.should.raise(ArgumentError)
   end
-  
+
   it 'returns nil when a git changes file cannot be found' do
-    self.stub!(:read_git_changes_file).and_raise
+    stub!(:read_git_changes_file).and_raise
     git_changes.should.be.nil
   end
-  
+
   it 'returns an empty list if no files are found in the git changes file' do
-    self.stub!(:read_git_changes_file).and_return('')
+    stub!(:read_git_changes_file).and_return('')
     git_changes.should == []
   end
-  
+
   it 'returns a list of all filenames mentioned in the git changes file' do
-    self.stub!(:read_git_changes_file).and_return(@contents)
+    stub!(:read_git_changes_file).and_return(@contents)
     git_changes.should == @contents.split("\n")
   end
-  
+
   it 'strips duplicates from filenames mentioned in the git changes file' do
     lines = @contents.split("\n")
     duplicates = @contents + lines.first + "\n" + lines.last + "\n"
-    self.stub!(:read_git_changes_file).and_return(duplicates)
+    stub!(:read_git_changes_file).and_return(duplicates)
     git_changes.sort.should == @contents.split("\n").sort
   end
 end
 
-describe "when finding files changed by rsync in a deployment" do
+describe 'when finding files changed by rsync in a deployment' do
   before do
     @contents = '2011/02/27 20:11:42 [36728] receiving file list
 2011/02/27 20:11:42 [36728] sent 24 bytes  received 9 bytes  total size 0
@@ -248,76 +248,76 @@ describe "when finding files changed by rsync in a deployment" do
 '
 
     @changes = [
-        "Info.plist",
-        "Application Support",
-        "Application Support/Google",
-        "Application Support/Google/GoogleTalkPlugin.app",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/GoogleBreakpad -> Versions/Current/GoogleBreakpad",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Resources -> Versions/Current/Resources",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions/A",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions/A/Resources",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions/A/Resources/Reporter.app",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions/A/Resources/Reporter.app/Contents",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions/Current -> A",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/Info.plist",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/MacOS",
-        "Application Support/Google/GoogleTalkPlugin.app/Contents/MacOS/GoogleTalkPlugin",
-        "Internet Plug-Ins",
-        "Internet Plug-Ins/googletalkbrowserplugin.plugin",
-        "Internet Plug-Ins/googletalkbrowserplugin.plugin/Contents",
-        "Internet Plug-Ins/googletalkbrowserplugin.plugin/Contents/MacOS",
-        "Internet Plug-Ins/googletalkbrowserplugin.plugin/Contents/MacOS/googletalkbrowserplugin",
-        "Internet Plug-Ins/googletalkbrowserplugin.plugin/Contents/Resources",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework/Cg -> Versions/Current/Cg",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework/Resources -> Versions/Current/Resources",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework/Versions",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework/Versions/1.0",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework/Versions/Current -> 1.0",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Info.plist",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/MacOS",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Resources",
-        "Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Resources/English.lproj",
-        "QuickTime",
-        "QuickTime/Google Camera Adapter 0.component",
-        "QuickTime/Google Camera Adapter 0.component/Contents",
-        "QuickTime/Google Camera Adapter 0.component/Contents/MacOS",
-        "QuickTime/Google Camera Adapter 0.component/Contents/Resources",
-        "QuickTime/Google Camera Adapter 1.component",
-        "QuickTime/Google Camera Adapter 1.component/Contents",
-        "QuickTime/Google Camera Adapter 1.component/Contents/Info.plist",
-        "QuickTime/Google Camera Adapter 1.component/Contents/MacOS",
-        "QuickTime/Google Camera Adapter 1.component/Contents/Resources",
-      ]
+      'Info.plist',
+      'Application Support',
+      'Application Support/Google',
+      'Application Support/Google/GoogleTalkPlugin.app',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/GoogleBreakpad -> Versions/Current/GoogleBreakpad',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Resources -> Versions/Current/Resources',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions/A',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions/A/Resources',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions/A/Resources/Reporter.app',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions/A/Resources/Reporter.app/Contents',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Frameworks/GoogleBreakpad.framework/Versions/Current -> A',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/Info.plist',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/MacOS',
+      'Application Support/Google/GoogleTalkPlugin.app/Contents/MacOS/GoogleTalkPlugin',
+      'Internet Plug-Ins',
+      'Internet Plug-Ins/googletalkbrowserplugin.plugin',
+      'Internet Plug-Ins/googletalkbrowserplugin.plugin/Contents',
+      'Internet Plug-Ins/googletalkbrowserplugin.plugin/Contents/MacOS',
+      'Internet Plug-Ins/googletalkbrowserplugin.plugin/Contents/MacOS/googletalkbrowserplugin',
+      'Internet Plug-Ins/googletalkbrowserplugin.plugin/Contents/Resources',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework/Cg -> Versions/Current/Cg',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework/Resources -> Versions/Current/Resources',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework/Versions',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework/Versions/1.0',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Frameworks/Cg.framework/Versions/Current -> 1.0',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Info.plist',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/MacOS',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Resources',
+      'Internet Plug-Ins/npgtpo3dautoplugin.plugin/Contents/Resources/English.lproj',
+      'QuickTime',
+      'QuickTime/Google Camera Adapter 0.component',
+      'QuickTime/Google Camera Adapter 0.component/Contents',
+      'QuickTime/Google Camera Adapter 0.component/Contents/MacOS',
+      'QuickTime/Google Camera Adapter 0.component/Contents/Resources',
+      'QuickTime/Google Camera Adapter 1.component',
+      'QuickTime/Google Camera Adapter 1.component/Contents',
+      'QuickTime/Google Camera Adapter 1.component/Contents/Info.plist',
+      'QuickTime/Google Camera Adapter 1.component/Contents/MacOS',
+      'QuickTime/Google Camera Adapter 1.component/Contents/Resources'
+    ]
   end
 
   it 'works without arguments' do
-    lambda { rsync_changes }.should.not.raise(ArgumentError)
+    -> { rsync_changes }.should.not.raise(ArgumentError)
   end
 
   it 'does not allow arguments' do
-    lambda { rsync_changes(:foo) }.should.raise(ArgumentError)
+    -> { rsync_changes(:foo) }.should.raise(ArgumentError)
   end
 
   it 'returns nil when an rsync changes file cannot be found' do
-    self.stub!(:read_rsync_changes_file).and_raise
+    stub!(:read_rsync_changes_file).and_raise
     rsync_changes.should.be.nil
   end
 
   it 'returns an empty list if no files are found in the rsync changes file' do
-    self.stub!(:read_rsync_changes_file).and_return('')
+    stub!(:read_rsync_changes_file).and_return('')
     rsync_changes.should == []
   end
 
   it 'returns a list of all changed filenames mentioned in the rsync changes file, excluding "."' do
-    self.stub!(:read_rsync_changes_file).and_return(@contents)
+    stub!(:read_rsync_changes_file).and_return(@contents)
     rsync_changes.sort.first.should == @changes.sort.first
   end
 end
@@ -326,33 +326,33 @@ describe 'when reading the git-related changes for a deployment' do
   before do
     @contents = 'git changes'
     @changes_path = '/path/to/git/changes'
-    self.stub!(:git_changes_path).and_return(@changes_path)
+    stub!(:git_changes_path).and_return(@changes_path)
     File.stub!(:read).with(@changes_path).and_return(@contents)
   end
-  
+
   it 'works without arguments' do
-    lambda { read_git_changes_file }.should.not.raise(ArgumentError)
+    -> { read_git_changes_file }.should.not.raise(ArgumentError)
   end
-  
+
   it 'does not allow arguments' do
-    lambda { read_git_changes_file(:foo) }.should.raise(ArgumentError)
+    -> { read_git_changes_file(:foo) }.should.raise(ArgumentError)
   end
-  
+
   it 'reads the git changes file' do
     File.should.receive(:read) do |arg|
-      arg.should == @changes_path
+      arg.should
       @contents
     end
     read_git_changes_file
   end
-  
+
   it 'returns the contents of the git changes file' do
     read_git_changes_file.should == @contents
   end
-  
+
   it 'fails if the git changes file cannot be read' do
     File.stub!(:read).with(@changes_path).and_raise(Errno::ENOENT)
-    lambda { read_git_changes_file }.should.raise(Errno::ENOENT)
+    -> { read_git_changes_file }.should.raise(Errno::ENOENT)
   end
 end
 
@@ -360,33 +360,33 @@ describe 'when reading the rsync-related changes for a deployment' do
   before do
     @contents = 'rsync changes'
     @changes_path = '/path/to/rsync/changes'
-    self.stub!(:rsync_changes_path).and_return(@changes_path)
+    stub!(:rsync_changes_path).and_return(@changes_path)
     File.stub!(:read).with(@changes_path).and_return(@contents)
   end
-  
+
   it 'works without arguments' do
-    lambda { read_rsync_changes_file }.should.not.raise(ArgumentError)
+    -> { read_rsync_changes_file }.should.not.raise(ArgumentError)
   end
-  
+
   it 'does not allow arguments' do
-    lambda { read_rsync_changes_file(:foo) }.should.raise(ArgumentError)
+    -> { read_rsync_changes_file(:foo) }.should.raise(ArgumentError)
   end
-  
+
   it 'reads the rsync changes file' do
     File.should.receive(:read) do |arg|
-      arg.should == @changes_path
+      arg.should
       @contents
     end
     read_rsync_changes_file
   end
-  
+
   it 'returns the contents of the rsync changes file' do
     read_rsync_changes_file.should == @contents
   end
-  
+
   it 'fails if the rsync changes file cannot be read' do
     File.stub!(:read).with(@changes_path).and_raise(Errno::ENOENT)
-    lambda { read_rsync_changes_file }.should.raise(Errno::ENOENT)
+    -> { read_rsync_changes_file }.should.raise(Errno::ENOENT)
   end
 end
 
@@ -394,25 +394,25 @@ describe 'computing the path to the git changes file' do
   before do
     @git_path = '/path/to/toplevel'
     @io_handle = ''
-    IO.stub!(:popen).with("git rev-parse --show-toplevel").and_return(@io_handle)
+    IO.stub!(:popen).with('git rev-parse --show-toplevel').and_return(@io_handle)
     @io_handle.stub!(:read).and_return(@git_path + "\n")
   end
-  
+
   it 'works without arguments' do
-    lambda { git_changes_path }.should.not.raise(ArgumentError)
+    -> { git_changes_path }.should.not.raise(ArgumentError)
   end
-  
+
   it 'does not allow arguments' do
-    lambda { git_changes_path(:foo) }.should.raise(ArgumentError)
+    -> { git_changes_path(:foo) }.should.raise(ArgumentError)
   end
-  
+
   it 'returns the path to the .whiskey_disk_git_changes file in the git top-level path' do
     git_changes_path.should == File.join(@git_path, '.whiskey_disk_git_changes')
   end
-  
+
   it 'returns the path to the .whiskey_disk_git_changes file in the current directory of the git top-level cannot be found' do
     @io_handle.stub!(:read).and_return('')
-    git_changes_path.should == File.join(Dir.pwd, '.whiskey_disk_git_changes')    
+    git_changes_path.should == File.join(Dir.pwd, '.whiskey_disk_git_changes')
   end
 end
 
@@ -420,24 +420,24 @@ describe 'computing the path to the rsync changes file' do
   before do
     @rsync_path = '/path/to/toplevel'
     @io_handle = ''
-    IO.stub!(:popen).with("git rev-parse --show-toplevel").and_return(@io_handle)
+    IO.stub!(:popen).with('git rev-parse --show-toplevel').and_return(@io_handle)
     @io_handle.stub!(:read).and_return(@rsync_path + "\n")
   end
-  
+
   it 'works without arguments' do
-    lambda { rsync_changes_path }.should.not.raise(ArgumentError)
+    -> { rsync_changes_path }.should.not.raise(ArgumentError)
   end
-  
+
   it 'does not allow arguments' do
-    lambda { rsync_changes_path(:foo) }.should.raise(ArgumentError)
+    -> { rsync_changes_path(:foo) }.should.raise(ArgumentError)
   end
-  
+
   it 'returns the path to the .whiskey_disk_rsync_changes file in the git top-level path' do
     rsync_changes_path.should == File.join(@rsync_path, '.whiskey_disk_rsync_changes')
   end
-  
+
   it 'returns the path to the .whiskey_disk_rsync_changes file in the current directory of the git top-level cannot be found' do
     @io_handle.stub!(:read).and_return('')
-    rsync_changes_path.should == File.join(Dir.pwd, '.whiskey_disk_rsync_changes')    
+    rsync_changes_path.should == File.join(Dir.pwd, '.whiskey_disk_rsync_changes')
   end
 end

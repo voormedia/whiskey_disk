@@ -4,9 +4,8 @@ class WhiskeyDisk
   class Config
     class DefaultDomainFilter < AbstractFilter
       def filter(data)
-        data.has_key?('domain') ? data : data.merge('domain' => [ { 'name' => 'local' } ] )
+        data.has_key?('domain') ? data : data.merge('domain' => [{ 'name' => 'local' }])
       end
     end
   end
 end
-

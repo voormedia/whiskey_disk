@@ -1,6 +1,7 @@
 require File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..', 'spec_helper.rb'))
 require File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'lib', 'whiskey_disk', 'config'))
-require File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'lib', 'whiskey_disk', 'config', 'filters', 'localize_domains_filter'))
+require File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'lib', 'whiskey_disk', 'config',
+                                   'filters', 'localize_domains_filter'))
 
 describe 'setting empty domain entries to "local"' do
   before do
@@ -17,7 +18,7 @@ describe 'setting empty domain entries to "local"' do
         { 'name' => 'x' }
       ]
     }
-    
+
     @filter.filter(@data).should == {
       'domain' => [
         { 'name' => 'local' },

@@ -16,7 +16,7 @@ integration_spec do
       describe 'performing a setup' do
         it 'performs a checkout of the repository to the target path' do
           run_setup(@args)
-          File.exists?(deployed_file('project/README')).should == true
+          File.exist?(deployed_file('project/README')).should == true
         end
 
         it 'reports the local setup as successful' do
@@ -37,7 +37,7 @@ integration_spec do
 
         it 'updates the checkout of the repository on the target path' do
           run_deploy(@args)
-          File.exists?(deployed_file('project/README')).should == true
+          File.exist?(deployed_file('project/README')).should == true
         end
 
         it 'reports the local deployment as successful' do
@@ -60,7 +60,7 @@ integration_spec do
       describe 'performing a setup' do
         it 'performs a checkout of the repository to the target path' do
           run_setup(@args)
-          File.exists?(deployed_file('project/README')).should == true
+          File.exist?(deployed_file('project/README')).should == true
         end
 
         it 'reports the local setup as successful' do
@@ -81,7 +81,7 @@ integration_spec do
 
         it 'updates the checkout of the repository on the target path' do
           run_deploy(@args)
-          File.exists?(deployed_file('project/README')).should == true
+          File.exist?(deployed_file('project/README')).should == true
         end
 
         it 'reports the local deployment as successful' do
@@ -104,7 +104,7 @@ integration_spec do
       describe 'performing a setup' do
         it 'performs a checkout of the repository to the target path' do
           run_setup(@args)
-          File.exists?(deployed_file('project/README')).should == true
+          File.exist?(deployed_file('project/README')).should == true
         end
 
         it 'reports the named domain setup as successful' do
@@ -125,7 +125,7 @@ integration_spec do
 
         it 'updates the checkout of the repository on the target path' do
           run_deploy(@args)
-          File.exists?(deployed_file('project/README')).should == true
+          File.exist?(deployed_file('project/README')).should == true
         end
 
         it 'reports the named domain deployment as successful' do
@@ -148,7 +148,7 @@ integration_spec do
       describe 'performing a setup' do
         it 'performs a checkout of the repository to the target path' do
           run_setup(@args)
-          File.exists?(deployed_file('project/README')).should == true
+          File.exist?(deployed_file('project/README')).should == true
         end
 
         it 'reports the named domain setup as successful' do
@@ -169,7 +169,7 @@ integration_spec do
 
         it 'updates the checkout of the repository on the target path' do
           run_deploy(@args)
-          File.exists?(deployed_file('project/README')).should == true
+          File.exist?(deployed_file('project/README')).should == true
         end
 
         it 'reports the named domain deployment as successful' do
@@ -192,7 +192,7 @@ integration_spec do
       describe 'performing a setup' do
         it 'does not perform a checkout of the repository to the target path' do
           run_setup(@args)
-          File.exists?(deployed_file('project/README')).should == false
+          File.exist?(deployed_file('project/README')).should == false
         end
 
         it 'reports that there were no deployments' do
@@ -213,7 +213,7 @@ integration_spec do
 
         it 'does not update the checkout of the repository on the target path' do
           run_deploy(@args)
-          File.exists?(deployed_file('project/README')).should == false
+          File.exist?(deployed_file('project/README')).should == false
         end
 
         it 'reports that there were no deployments' do

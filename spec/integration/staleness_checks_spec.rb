@@ -21,7 +21,7 @@ integration_spec do
 
         it 'does not update the checkout of the repository on the target path' do
           run_deploy(@args)
-          File.exists?(deployed_file('project/README')).should == false
+          File.exist?(deployed_file('project/README')).should == false
         end
 
         it 'reports the local deployment as successful' do
@@ -55,7 +55,7 @@ integration_spec do
 
         it 'does not update the checkout of the repository on the target path' do
           run_deploy(@args)
-          File.exists?(deployed_file('project/README')).should == false
+          File.exist?(deployed_file('project/README')).should == false
         end
 
         it 'reports the local deployment as successful' do

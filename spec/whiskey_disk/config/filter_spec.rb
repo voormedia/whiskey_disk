@@ -10,68 +10,69 @@ describe WhiskeyDisk::Config::Filter, 'filtering configuration data' do
     @filter = WhiskeyDisk::Config::Filter.new(@config)
 
     @data = {
-      'foo' => { 
+      'foo' => {
         'xyz' => { 'repository' => 'x' },
         'eee' => { 'repository' => 'x', 'domain' => '' },
         'abc' => { 'repository' => 'x', 'domain' => 'what@example.com' },
-        'baz' => { 'repository' => 'x', 'domain' => [ 'bar@example.com', 'baz@domain.com' ]},
-        'bar' => { 'repository' => 'x', 'domain' => [ 'user@example.com', nil, 'foo@domain.com' ]},
-        'bat' => { 'repository' => 'x', 'domain' => [ 'user@example.com', 'foo@domain.com', '' ]},
-        'hsh' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com' }, { 'name' => 'baz@domain.com' } ]},
-        'mix' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com' }, 'baz@domain.com' ]},            
-        'erl' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 
-                                                        'roles' => nil,
-                                                        'ssh_options' => ['-t', '-v' ] }, 
-                                                      { 'name' => 'baz@domain.com', 
-                                                        'ssh_options' => '-t',
-                                                        'roles' => '' },
-                                                      { 'name' => 'aok@domain.com', 
-                                                        'ssh_options' => [], 
-                                                        'roles' => [] } ]},
-        'rol' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => [ 'web', 'db' ] }, 
-                                                      { 'name' => 'baz@domain.com', 'roles' => [ 'db' ] },            
-                                                      { 'name' => 'aok@domain.com', 'roles' => 'app' } ]},            
-        'wow' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => [ 'web', 'db' ] }, 
-                                                      { 'name' => 'baz@domain.com', 'roles' => [ 'db' ] },   
-                                                        '', 'foo@bar.example.com',      
-                                                      { 'name' => 'aok@domain.com', 'roles' => 'app' } ]},            
+        'baz' => { 'repository' => 'x', 'domain' => ['bar@example.com', 'baz@domain.com'] },
+        'bar' => { 'repository' => 'x', 'domain' => ['user@example.com', nil, 'foo@domain.com'] },
+        'bat' => { 'repository' => 'x', 'domain' => ['user@example.com', 'foo@domain.com', ''] },
+        'hsh' => { 'repository' => 'x',
+                   'domain' => [{ 'name' => 'bar@example.com' }, { 'name' => 'baz@domain.com' }] },
+        'mix' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com' }, 'baz@domain.com'] },
+        'erl' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com',
+                                                       'roles' => nil,
+                                                       'ssh_options' => ['-t', '-v'] },
+                                                     { 'name' => 'baz@domain.com',
+                                                       'ssh_options' => '-t',
+                                                       'roles' => '' },
+                                                     { 'name' => 'aok@domain.com',
+                                                       'ssh_options' => [],
+                                                       'roles' => [] }] },
+        'rol' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => %w[web db] },
+                                                     { 'name' => 'baz@domain.com', 'roles' => ['db'] },
+                                                     { 'name' => 'aok@domain.com', 'roles' => 'app' }] },
+        'wow' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => %w[web db] },
+                                                     { 'name' => 'baz@domain.com', 'roles' => ['db'] },
+                                                     '', 'foo@bar.example.com',
+                                                     { 'name' => 'aok@domain.com', 'roles' => 'app' }] }
       },
 
       'zyx' => {
         'xyz' => { 'repository' => 'x' },
         'eee' => { 'repository' => 'x', 'domain' => '' },
         'abc' => { 'repository' => 'x', 'domain' => 'what@example.com' },
-        'hij' => { 'repository' => 'x', 'domain' => [ 'bar@example.com', 'baz@domain.com' ]},
-        'def' => { 'repository' => 'x', 'domain' => [ 'user@example.com', nil, 'foo@domain.com' ]},
-        'dex' => { 'repository' => 'x', 'domain' => [ 'user@example.com', 'foo@domain.com', '' ]},
-        'hsh' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com' }, { 'name' => 'baz@domain.com' } ]},
-        'mix' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com' }, 'baz@domain.com' ]},
-        'erl' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => nil }, 
-                                                      { 'name' => 'baz@domain.com', 'roles' => '' },
-                                                      { 'name' => 'aok@domain.com', 'roles' => [] } ]},
-        'rol' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => [ 'web', 'db' ] }, 
-                                                      { 'name' => 'baz@domain.com', 'roles' => [ 'db' ] },         
-                                                      { 'name' => 'aok@domain.com', 'roles' => 'app' } ]},            
-        'wow' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => [ 'web', 'db' ] }, 
-                                                      { 'name' => 'baz@domain.com', 'roles' => [ 'db' ] },   
-                                                         '', 'foo@bar.example.com',      
-                                                      { 'name' => 'aok@domain.com', 'roles' => 'app' } ]},            
+        'hij' => { 'repository' => 'x', 'domain' => ['bar@example.com', 'baz@domain.com'] },
+        'def' => { 'repository' => 'x', 'domain' => ['user@example.com', nil, 'foo@domain.com'] },
+        'dex' => { 'repository' => 'x', 'domain' => ['user@example.com', 'foo@domain.com', ''] },
+        'hsh' => { 'repository' => 'x',
+                   'domain' => [{ 'name' => 'bar@example.com' }, { 'name' => 'baz@domain.com' }] },
+        'mix' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com' }, 'baz@domain.com'] },
+        'erl' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => nil },
+                                                     { 'name' => 'baz@domain.com', 'roles' => '' },
+                                                     { 'name' => 'aok@domain.com', 'roles' => [] }] },
+        'rol' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => %w[web db] },
+                                                     { 'name' => 'baz@domain.com', 'roles' => ['db'] },
+                                                     { 'name' => 'aok@domain.com', 'roles' => 'app' }] },
+        'wow' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => %w[web db] },
+                                                     { 'name' => 'baz@domain.com', 'roles' => ['db'] },
+                                                     '', 'foo@bar.example.com',
+                                                     { 'name' => 'aok@domain.com', 'roles' => 'app' }] }
       }
     }
   end
-  
+
   it 'should apply all available filters' do
     @filter.filter_data(@data).should == {
-      'repository'    => "x", 
-      'project'       => "foo", 
-      'config_target' => "erl", 
-      'environment'   => "erl",
-      'domain'        => [ 
-        { 'name' => "bar@example.com", 'ssh_options' => [ '-t', '-v' ] }, 
-        { 'name' => "baz@domain.com", 'ssh_options' => [ '-t' ] }, 
-        { 'name' => "aok@domain.com" }
+      'repository' => 'x',
+      'project' => 'foo',
+      'config_target' => 'erl',
+      'environment' => 'erl',
+      'domain' => [
+        { 'name' => 'bar@example.com', 'ssh_options' => ['-t', '-v'] },
+        { 'name' => 'baz@domain.com', 'ssh_options' => ['-t'] },
+        { 'name' => 'aok@domain.com' }
       ]
     }
   end
 end
-

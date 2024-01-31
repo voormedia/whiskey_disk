@@ -12,7 +12,7 @@ integration_spec do
     describe 'and performing a setup' do
       it 'performs a checkout of the repository to the target path' do
         run_setup(@args)
-        File.exists?(deployed_file('project/README')).should == true
+        File.exist?(deployed_file('project/README')).should == true
       end
 
       it 'considers all files changed, running any actions guarded by #changed?' do
@@ -54,7 +54,7 @@ integration_spec do
 
       it 'updates the repo checkout' do
         run_deploy(@args)
-        File.exists?(deployed_file('project/README')).should == true
+        File.exist?(deployed_file('project/README')).should == true
       end
 
       it 'runs actions contingent on file changes' do

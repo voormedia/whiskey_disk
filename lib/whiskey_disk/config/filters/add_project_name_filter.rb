@@ -4,7 +4,7 @@ class WhiskeyDisk
   class Config
     class AddProjectNameFilter < AbstractFilter
       def filter(data)
-        data.merge( { 'project' => project_name } )
+        data.merge({ 'project' => project_name })
       end
     end
   end

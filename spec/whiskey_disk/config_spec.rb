@@ -11,7 +11,8 @@ def make(path)
 end
 
 def build_temp_dir
-  return Dir.mktmpdir(nil, '/private/tmp') if File.exists?('/private/tmp')
+  return Dir.mktmpdir(nil, '/private/tmp') if File.exist?('/private/tmp')
+
   Dir.mktmpdir
 end
 
@@ -25,7 +26,7 @@ class TestURLConfig < WhiskeyDisk::Config
     @fake_response = YAML.dump(data)
   end
 
-  def open(path)
+  def open(_path)
     @fake_response || raise
   end
 end
@@ -34,7 +35,7 @@ describe WhiskeyDisk::Config do
   before do
     @config = WhiskeyDisk::Config.new
   end
-  
+
   describe 'when computing the environment name' do
     it 'returns false when there is no ENV["to"] setting' do
       ENV['to'] = nil
@@ -93,21 +94,21 @@ describe WhiskeyDisk::Config do
       @config.check_staleness?.should == true
     end
   end
-  
+
   describe 'when determining whether there is a domain limit set' do
     it 'returns false when ENV["only"] is nil' do
       ENV['only'] = nil
       @config.domain_limit.should == false
     end
-    
+
     it 'returns false when ENV["only"] is empty' do
       ENV['only'] = ''
       @config.domain_limit.should == false
     end
-    
+
     it 'returns the value in ENV["only"] when it is non-empty' do
       ENV['only'] = 'somedomain'
-      @config.domain_limit.should == 'somedomain'      
+      @config.domain_limit.should == 'somedomain'
     end
   end
 
@@ -155,91 +156,91 @@ describe WhiskeyDisk::Config do
         ENV['path'] = 'https://www.example.com/foo/bar/deploy.yml'
         @config = TestURLConfig.new
       end
-      
+
       it 'fails if the current environment cannot be determined' do
         ENV['to'] = nil
-        lambda { @config.fetch }.should.raise
+        -> { @config.fetch }.should.raise
       end
 
       it 'fails if the configuration data cannot be retrieved' do
         @config.stub!(:open).and_raise(RuntimeError)
-        lambda { @config.fetch }.should.raise
+        -> { @config.fetch }.should.raise
       end
 
       it 'fails if the retrieved configuration data is invalid' do
-        @config.stub!(:open).and_return("}")
-        lambda { @config.fetch }.should.raise
+        @config.stub!(:open).and_return('}')
+        -> { @config.fetch }.should.raise
       end
 
       it 'fails if the retrieved configuration data does not define data for this environment' do
-        @config.set_response('foo' => { 'production' => { 'a' => 'b'} })
-        lambda { @config.fetch }.should.raise
+        @config.set_response('foo' => { 'production' => { 'a' => 'b' } })
+        -> { @config.fetch }.should.raise
       end
 
       it 'returns the retrieved configuration yaml data for this environment as a hash' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy' }
-        @config.set_response('foo' => { 'production' => { 'repository' => 'b'}, 'staging' => staging })
+        @config.set_response('foo' => { 'production' => { 'repository' => 'b' }, 'staging' => staging })
         result = @config.fetch
-        staging.each_pair do |k,v|
+        staging.each_pair do |k, v|
           result[k].should == v
         end
       end
-    
+
       it 'does not include configuration information for other environments in the returned hash' do
         staging = { 'foo' => 'bar', 'baz' => 'xyzzy' }
-        @config.set_response('production' => { 'repository' => 'c', 'a' => 'b'}, 'staging' => staging)
+        @config.set_response('production' => { 'repository' => 'c', 'a' => 'b' }, 'staging' => staging)
         @config.fetch['a'].should.be.nil
       end
 
       it 'includes the environment in the hash' do
         staging = { 'foo' => 'bar', 'baz' => 'xyzzy' }
-        @config.set_response('foo' => { 'production' => { 'repository' => 'b'}, 'staging' => staging })
+        @config.set_response('foo' => { 'production' => { 'repository' => 'b' }, 'staging' => staging })
         @config.fetch['environment'].should == 'staging'
       end
 
       it 'does not allow overriding the environment in the configuration file' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy', 'environment' => 'production' }
-        @config.set_response('foo' => { 'production' => { 'repository' => 'b'}, 'staging' => staging })
+        @config.set_response('foo' => { 'production' => { 'repository' => 'b' }, 'staging' => staging })
         @config.fetch['environment'].should == 'staging'
       end
 
       it 'includes the project handle in the hash' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy' }
-        @config.set_response('foo' => { 'production' => { 'repository' => 'b'}, 'staging' => staging })
+        @config.set_response('foo' => { 'production' => { 'repository' => 'b' }, 'staging' => staging })
         @config.fetch['project'].should == 'foo'
       end
 
       it 'does not allow overriding the project handle in the configuration file when a project root is specified' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy', 'project' => 'diskey_whisk' }
-        @config.set_response('foo' => { 'production' => { 'repository' => 'b'}, 'staging' => staging })
+        @config.set_response('foo' => { 'production' => { 'repository' => 'b' }, 'staging' => staging })
         @config.fetch['project'].should == 'foo'
       end
 
       it 'allows overriding the project handle in the configuration file when a project root is not specified' do
         ENV['to'] = @env = 'staging'
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy', 'project' => 'diskey_whisk' }
-        @config.set_response('production' => { 'repository' => 'b'}, 'staging' => staging)
+        @config.set_response('production' => { 'repository' => 'b' }, 'staging' => staging)
         @config.fetch['project'].should == 'diskey_whisk'
       end
-    
+
       it 'includes the environment name as the config_target setting when no config_target is specified' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy', 'project' => 'diskey_whisk' }
-        @config.set_response('production' => { 'repository' => 'b'}, 'staging' => staging)
+        @config.set_response('production' => { 'repository' => 'b' }, 'staging' => staging)
         @config.fetch['config_target'].should == 'staging'
       end
-    
+
       it 'includes the config_target setting when a config_target is specified' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy', 'project' => 'diskey_whisk', 'config_target' => 'testing' }
-        @config.set_response('production' => { 'repository' => 'b'}, 'staging' => staging)
+        @config.set_response('production' => { 'repository' => 'b' }, 'staging' => staging)
         @config.fetch['config_target'].should == 'testing'
       end
-      
+
       it 'fails if the named target cannot be found' do
         ENV['to'] = @env = 'bogus:thing'
-        lambda { @config.fetch }.should.raise
+        -> { @config.fetch }.should.raise
       end
     end
-    
+
     describe 'and path specified is not an URL' do
       before do
         ENV['to'] = @env = 'foo:staging'
@@ -250,92 +251,92 @@ describe WhiskeyDisk::Config do
       after do
         FileUtils.rm_rf(@path)
       end
-      
+
       it 'fails if the current environment cannot be determined' do
         ENV['to'] = nil
-        lambda { @config.fetch }.should.raise
+        -> { @config.fetch }.should.raise
       end
 
       it 'fails if the configuration file does not exist' do
-        lambda { @config.fetch }.should.raise
+        -> { @config.fetch }.should.raise
       end
 
       it 'fails if the configuration file cannot be read' do
         Dir.mkdir(File.join(@path, 'tmp'))
-        lambda { @config.fetch }.should.raise
+        -> { @config.fetch }.should.raise
       end
 
       it 'fails if the configuration file is invalid' do
-        File.open(@config_file, 'w') {|f| f.puts "}" }
-        lambda { @config.fetch }.should.raise
+        File.open(@config_file, 'w') { |f| f.puts '}' }
+        -> { @config.fetch }.should.raise
       end
 
       it 'fails if the configuration file does not define data for this environment' do
-        write_config_file('foo' => { 'production' => { 'a' => 'b'} })
-        lambda { @config.fetch }.should.raise
+        write_config_file('foo' => { 'production' => { 'a' => 'b' } })
+        -> { @config.fetch }.should.raise
       end
 
       it 'returns the configuration yaml file data for this environment as a hash' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy' }
-        write_config_file('foo' => { 'production' => { 'repository' => 'b'}, 'staging' => staging })
+        write_config_file('foo' => { 'production' => { 'repository' => 'b' }, 'staging' => staging })
         result = @config.fetch
-        staging.each_pair do |k,v|
+        staging.each_pair do |k, v|
           result[k].should == v
         end
       end
-    
+
       it 'does not include configuration information for other environments in the returned hash' do
         staging = { 'foo' => 'bar', 'baz' => 'xyzzy' }
-        write_config_file('production' => { 'repository' => 'c', 'a' => 'b'}, 'staging' => staging)
+        write_config_file('production' => { 'repository' => 'c', 'a' => 'b' }, 'staging' => staging)
         @config.fetch['a'].should.be.nil
       end
 
       it 'includes the environment in the hash' do
         staging = { 'foo' => 'bar', 'baz' => 'xyzzy' }
-        write_config_file('foo' => { 'production' => { 'repository' => 'b'}, 'staging' => staging })
+        write_config_file('foo' => { 'production' => { 'repository' => 'b' }, 'staging' => staging })
         @config.fetch['environment'].should == 'staging'
       end
 
       it 'does not allow overriding the environment in the configuration file' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy', 'environment' => 'production' }
-        write_config_file('foo' => { 'production' => { 'repository' => 'b'}, 'staging' => staging })
+        write_config_file('foo' => { 'production' => { 'repository' => 'b' }, 'staging' => staging })
         @config.fetch['environment'].should == 'staging'
       end
 
       it 'includes the project handle in the hash' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy' }
-        write_config_file('foo' => { 'production' => { 'repository' => 'b'}, 'staging' => staging })
+        write_config_file('foo' => { 'production' => { 'repository' => 'b' }, 'staging' => staging })
         @config.fetch['project'].should == 'foo'
       end
 
       it 'does not allow overriding the project handle in the configuration file when a project root is specified' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy', 'project' => 'diskey_whisk' }
-        write_config_file('foo' => { 'production' => { 'repository' => 'b'}, 'staging' => staging })
+        write_config_file('foo' => { 'production' => { 'repository' => 'b' }, 'staging' => staging })
         @config.fetch['project'].should == 'foo'
       end
 
       it 'allows overriding the project handle in the configuration file when a project root is not specified' do
         ENV['to'] = @env = 'staging'
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy', 'project' => 'diskey_whisk' }
-        write_config_file('production' => { 'repository' => 'b'}, 'staging' => staging)
+        write_config_file('production' => { 'repository' => 'b' }, 'staging' => staging)
         @config.fetch['project'].should == 'diskey_whisk'
       end
-    
+
       it 'includes the environment name as the config_target setting when no config_target is specified' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy', 'project' => 'diskey_whisk' }
-        write_config_file('production' => { 'repository' => 'b'}, 'staging' => staging)
+        write_config_file('production' => { 'repository' => 'b' }, 'staging' => staging)
         @config.fetch['config_target'].should == 'staging'
       end
-    
+
       it 'includes the config_target setting when a config_target is specified' do
         staging = { 'foo' => 'bar', 'repository' => 'xyzzy', 'project' => 'diskey_whisk', 'config_target' => 'testing' }
-        write_config_file('production' => { 'repository' => 'b'}, 'staging' => staging)
+        write_config_file('production' => { 'repository' => 'b' }, 'staging' => staging)
         @config.fetch['config_target'].should == 'testing'
       end
-      
+
       it 'fails if the named target cannot be found' do
         ENV['to'] = @env = 'bogus:thing'
-        lambda { @config.fetch }.should.raise
+        -> { @config.fetch }.should.raise
       end
     end
   end
@@ -345,17 +346,17 @@ describe WhiskeyDisk::Config do
       @path = build_temp_dir
       ENV['path'] = @config_file = File.join(@path, 'deploy.yml')
     end
-    
+
     after do
       FileUtils.rm_rf(@path)
     end
 
     it 'fails if the configuration file does not exist' do
-      lambda { @config.configuration_data }.should.raise
+      -> { @config.configuration_data }.should.raise
     end
 
     it 'returns the contents of the configuration file' do
-      File.open(@config_file, 'w') { |f| f.puts "file contents" }
+      File.open(@config_file, 'w') { |f| f.puts 'file contents' }
       @config.configuration_data.should == "file contents\n"
     end
   end
@@ -366,24 +367,24 @@ describe WhiskeyDisk::Config do
       @path = build_temp_dir
       ENV['path'] = @config_file = File.join(@path, 'deploy.yml')
     end
-    
+
     after do
       FileUtils.rm_rf(@path)
     end
-    
+
     it 'fails if the configuration data cannot be loaded' do
-      lambda { @config.load_data }.should.raise
+      -> { @config.load_data }.should.raise
     end
 
     it 'fails if converting the configuration data from YAML fails' do
-      File.open(@config_file, 'w') { |f| f.puts "}" }
-      lambda { @config.load_data }.should.raise
+      File.open(@config_file, 'w') { |f| f.puts '}' }
+      -> { @config.load_data }.should.raise
     end
 
     it 'returns the un-YAMLized configuration data' do
       write_config_file('repository' => 'x')
       @config.load_data.should == { 'repository' => 'x' }
-    end    
+    end
   end
 
   describe 'computing the project name' do
@@ -417,21 +418,21 @@ describe WhiskeyDisk::Config do
         FileUtils.touch(File.join(@base_path, 'Rakefile'))
         @dir = File.join(@base_path, 'config')
         Dir.mkdir(@dir)
-        
-        [ 
-          "/deploy/foo/staging.yml", 
-          "/deploy/foo.yml", 
-          "/deploy/staging.yml",
-          "/staging.yml", 
-          "/deploy.yml"
+
+        [
+          '/deploy/foo/staging.yml',
+          '/deploy/foo.yml',
+          '/deploy/staging.yml',
+          '/staging.yml',
+          '/deploy.yml'
         ].each { |file| make(File.join(@dir, file)) }
       end
-      
+
       after do
         FileUtils.rm_rf(@base_path)
         Dir.chdir(@original_path)
       end
-      
+
       describe 'and a project name is specified in ENV["to"]' do
         before do
           ENV['to'] = @env = 'foo:staging'
@@ -473,7 +474,7 @@ describe WhiskeyDisk::Config do
           File.unlink("#{@dir}/deploy/staging.yml")
           File.unlink("#{@dir}/staging.yml")
           File.unlink("#{@dir}/deploy.yml")
-          lambda { @config.configuration_file }.should.raise
+          -> { @config.configuration_file }.should.raise
         end
       end
 
@@ -497,7 +498,7 @@ describe WhiskeyDisk::Config do
           File.unlink("#{@dir}/deploy/staging.yml")
           File.unlink("#{@dir}/staging.yml")
           File.unlink("#{@dir}/deploy.yml")
-          lambda { @config.configuration_file }.should.raise
+          -> { @config.configuration_file }.should.raise
         end
       end
     end
@@ -507,13 +508,13 @@ describe WhiskeyDisk::Config do
         @path = build_temp_dir
         ENV['path'] = @config_file = File.join(@path, 'deploy.yml')
       end
-      
+
       after do
         FileUtils.rm_rf(@path)
       end
-    
+
       it 'fails if a path is specified which does not exist' do
-        lambda { @config.configuration_file }.should.raise
+        -> { @config.configuration_file }.should.raise
       end
 
       it 'returns the file path when a path which points to an existing file is specified' do
@@ -525,27 +526,27 @@ describe WhiskeyDisk::Config do
     describe 'and a path which points to a directory is specified' do
       before do
         ENV['path'] = @path = build_temp_dir
-        
-        [ 
-          "/deploy/foo/staging.yml", 
-          "/deploy/foo.yml", 
-          "/deploy/staging.yml",
-          "/staging.yml", 
-          "/deploy.yml"
+
+        [
+          '/deploy/foo/staging.yml',
+          '/deploy/foo.yml',
+          '/deploy/staging.yml',
+          '/staging.yml',
+          '/deploy.yml'
         ].each { |file| make(File.join(@path, file)) }
       end
 
       after do
         FileUtils.rm_rf(@path)
       end
-      
+
       describe 'and a project name is specified in ENV["to"]' do
         before do
           ENV['to'] = @env = 'foo:staging'
         end
 
         it 'returns the path to deploy/foo/<environment>.yml under the project base path if it exists' do
-          @config.configuration_file.should == File.join(@path, 'deploy', 'foo' ,'staging.yml')
+          @config.configuration_file.should == File.join(@path, 'deploy', 'foo', 'staging.yml')
         end
 
         it 'returns the path to deploy/foo.yml under the project base path if it exists' do
@@ -580,7 +581,7 @@ describe WhiskeyDisk::Config do
           File.unlink(File.join(@path, 'deploy', 'staging.yml'))
           File.unlink(File.join(@path, 'staging.yml'))
           File.unlink(File.join(@path, 'deploy.yml'))
-          lambda { @config.configuration_file }.should.raise
+          -> { @config.configuration_file }.should.raise
         end
       end
 
@@ -604,7 +605,7 @@ describe WhiskeyDisk::Config do
           File.unlink(File.join(@path, 'deploy', 'staging.yml'))
           File.unlink(File.join(@path, 'staging.yml'))
           File.unlink(File.join(@path, 'deploy.yml'))
-          lambda { @config.configuration_file }.should.raise
+          -> { @config.configuration_file }.should.raise
         end
       end
     end
@@ -614,60 +615,63 @@ describe WhiskeyDisk::Config do
     before do
       ENV['to'] = @env = 'foo:erl'
       @data = {
-        'foo' => { 
+        'foo' => {
           'xyz' => { 'repository' => 'x' },
           'eee' => { 'repository' => 'x', 'domain' => '' },
           'abc' => { 'repository' => 'x', 'domain' => 'what@example.com' },
-          'baz' => { 'repository' => 'x', 'domain' => [ 'bar@example.com', 'baz@domain.com' ]},
-          'bar' => { 'repository' => 'x', 'domain' => [ 'user@example.com', nil, 'foo@domain.com' ]},
-          'bat' => { 'repository' => 'x', 'domain' => [ 'user@example.com', 'foo@domain.com', '' ]},
-          'hsh' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com' }, { 'name' => 'baz@domain.com' } ]},
-          'mix' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com' }, 'baz@domain.com' ]},            
-          'erl' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => nil }, 
-                                                        { 'name' => 'baz@domain.com', 'roles' => '' },
-                                                        { 'name' => 'aok@domain.com', 'roles' => [] } ]},
-          'rol' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => [ 'web', 'db' ] }, 
-                                                        { 'name' => 'baz@domain.com', 'roles' => [ 'db' ] },            
-                                                        { 'name' => 'aok@domain.com', 'roles' => 'app' } ]},            
-          'wow' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => [ 'web', 'db' ] }, 
-                                                        { 'name' => 'baz@domain.com', 'roles' => [ 'db' ] },   
-                                                          '', 'foo@bar.example.com',      
-                                                        { 'name' => 'aok@domain.com', 'roles' => 'app' } ]},            
+          'baz' => { 'repository' => 'x', 'domain' => ['bar@example.com', 'baz@domain.com'] },
+          'bar' => { 'repository' => 'x', 'domain' => ['user@example.com', nil, 'foo@domain.com'] },
+          'bat' => { 'repository' => 'x', 'domain' => ['user@example.com', 'foo@domain.com', ''] },
+          'hsh' => { 'repository' => 'x',
+                     'domain' => [{ 'name' => 'bar@example.com' }, { 'name' => 'baz@domain.com' }] },
+          'mix' => { 'repository' => 'x',
+                     'domain' => [{ 'name' => 'bar@example.com' }, 'baz@domain.com'] },
+          'erl' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => nil },
+                                                       { 'name' => 'baz@domain.com', 'roles' => '' },
+                                                       { 'name' => 'aok@domain.com', 'roles' => [] }] },
+          'rol' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => %w[web db] },
+                                                       { 'name' => 'baz@domain.com', 'roles' => ['db'] },
+                                                       { 'name' => 'aok@domain.com', 'roles' => 'app' }] },
+          'wow' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => %w[web db] },
+                                                       { 'name' => 'baz@domain.com', 'roles' => ['db'] },
+                                                       '', 'foo@bar.example.com',
+                                                       { 'name' => 'aok@domain.com', 'roles' => 'app' }] }
         },
-  
+
         'zyx' => {
           'xyz' => { 'repository' => 'x' },
           'eee' => { 'repository' => 'x', 'domain' => '' },
           'abc' => { 'repository' => 'x', 'domain' => 'what@example.com' },
-          'hij' => { 'repository' => 'x', 'domain' => [ 'bar@example.com', 'baz@domain.com' ]},
-          'def' => { 'repository' => 'x', 'domain' => [ 'user@example.com', nil, 'foo@domain.com' ]},
-          'dex' => { 'repository' => 'x', 'domain' => [ 'user@example.com', 'foo@domain.com', '' ]},
-          'hsh' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com' }, { 'name' => 'baz@domain.com' } ]},
-          'mix' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com' }, 'baz@domain.com' ]},
-          'erl' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => nil }, 
-                                                        { 'name' => 'baz@domain.com', 'roles' => '' },
-                                                        { 'name' => 'aok@domain.com', 'roles' => [] } ]},
-          'rol' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => [ 'web', 'db' ] }, 
-                                                        { 'name' => 'baz@domain.com', 'roles' => [ 'db' ] },         
-                                                        { 'name' => 'aok@domain.com', 'roles' => 'app' } ]},            
-          'wow' => { 'repository' => 'x', 'domain' => [ { 'name' => 'bar@example.com', 'roles' => [ 'web', 'db' ] }, 
-                                                        { 'name' => 'baz@domain.com', 'roles' => [ 'db' ] },   
-                                                           '', 'foo@bar.example.com',      
-                                                        { 'name' => 'aok@domain.com', 'roles' => 'app' } ]},            
+          'hij' => { 'repository' => 'x', 'domain' => ['bar@example.com', 'baz@domain.com'] },
+          'def' => { 'repository' => 'x', 'domain' => ['user@example.com', nil, 'foo@domain.com'] },
+          'dex' => { 'repository' => 'x', 'domain' => ['user@example.com', 'foo@domain.com', ''] },
+          'hsh' => { 'repository' => 'x',
+                     'domain' => [{ 'name' => 'bar@example.com' }, { 'name' => 'baz@domain.com' }] },
+          'mix' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com' }, 'baz@domain.com'] },
+          'erl' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => nil },
+                                                       { 'name' => 'baz@domain.com', 'roles' => '' },
+                                                       { 'name' => 'aok@domain.com', 'roles' => [] }] },
+          'rol' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => %w[web db] },
+                                                       { 'name' => 'baz@domain.com', 'roles' => ['db'] },
+                                                       { 'name' => 'aok@domain.com', 'roles' => 'app' }] },
+          'wow' => { 'repository' => 'x', 'domain' => [{ 'name' => 'bar@example.com', 'roles' => %w[web db] },
+                                                       { 'name' => 'baz@domain.com', 'roles' => ['db'] },
+                                                       '', 'foo@bar.example.com',
+                                                       { 'name' => 'aok@domain.com', 'roles' => 'app' }] }
         }
       }
     end
-    
+
     it 'should apply all available filters' do
       @config.filter_data(@data).should == {
-        "repository" => "x", 
-        "project" => "foo", 
-        "config_target" => "erl", 
-        "environment" => "erl",
-        "domain"     => [ 
-          { 'name' => "bar@example.com" }, 
-          { 'name' => "baz@domain.com" }, 
-          { 'name' => "aok@domain.com" }
+        'repository' => 'x',
+        'project' => 'foo',
+        'config_target' => 'erl',
+        'environment' => 'erl',
+        'domain' => [
+          { 'name' => 'bar@example.com' },
+          { 'name' => 'baz@domain.com' },
+          { 'name' => 'aok@domain.com' }
         ]
       }
     end
@@ -688,7 +692,7 @@ describe WhiskeyDisk::Config do
         ENV['path'] = @path = build_temp_dir
         @original_path = Dir.pwd
       end
-      
+
       after do
         FileUtils.rm_rf(@path)
         Dir.chdir(@original_path)
